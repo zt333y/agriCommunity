@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.agricommunity.mapper.OrderMapper">
+
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_order (order_no, user_id, leader_id, community_id, total_amount, status)
+        VALUES (#{orderNo}, #{userId}, #{leaderId}, #{communityId}, #{totalAmount}, #{status})
+    </insert>
+
+    <insert id="insertOrderItem">
+        INSERT INTO t_order_item (order_id, product_id, farmer_id, product_name, product_price, quantity, total_price)
+        VALUES (#{orderId}, #{productId}, #{farmerId}, #{productName}, #{productPrice}, #{quantity}, #{totalPrice})
+    </insert>
+
+    <select id="selectOrderList" resultType="com.example.agricommunity.entity.OrderVO">
+        SELECT
+            o.id,
+            o.order_no as orderNo,
+            o.total_amount as totalAmount,
+            o.status,
+            o.create_time as createTime,
+            (SELECT GROUP_CONCAT(product_name SEPARATOR '、') FROM t_order_item WHERE order_id = o.id) as productNames
+        FROM t_order o
+        WHERE o.user_id = #{userId}
+        ORDER BY o.create_time DESC
+    </select>
+</mapper>

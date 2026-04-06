@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.agricommunity.mapper.UserMapper">
+
+    <select id="login" resultType="com.example.agricommunity.entity.User">
+        SELECT * FROM sys_user WHERE username = #{username} AND password = #{password}
+    </select>
+
+    <select id="selectByUsername" resultType="com.example.agricommunity.entity.User">
+        SELECT * FROM sys_user WHERE username = #{username}
+    </select>
+
+    <insert id="insertUser" parameterType="com.example.agricommunity.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (username, password, phone, role)
+        VALUES (#{username}, #{password}, #{phone}, #{role})
+    </insert>
+
+</mapper>
