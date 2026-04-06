@@ -14,10 +14,10 @@ public interface ProductMapper {
     List<Product> selectProductList(@Param("keyword") String keyword);
 
     // 查询所有待审核的商品 (status = 0)
-    @Select("SELECT * FROM tb_product WHERE status = 0")
+    @Select("SELECT * FROM t_product WHERE status = 0")
     List<Product> selectPendingProducts();
 
     // 更新商品的状态 (比如把 0 改成 1 也就是上架)
-    @Update("UPDATE tb_product SET status = #{status} WHERE id = #{id}")
+    @Update("UPDATE t_product SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
 }

@@ -24,11 +24,16 @@ public class UserController {
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody User loginUser) {
         try {
-            // 1. 调用 Service 层执行具体的登录校验逻辑
+// 1. 调用 Service 层执行具体的登录校验逻辑
             User user = userService.login(loginUser.getUsername(), loginUser.getPassword());
 
-            // 👉 2. 核心改造：登录成功，使用 JwtUtils 生成该用户的专属 Token
-            String token = JwtUtils.generateToken(user.getId(), user.getUsername(), user.getRoleType());
+            // 👇 新增判空拦截：如果账号密码错误，返回错误提示
+            if (user == null) {
+                return Result.error("用户名或密码错误");
+            }
+
+            // 2. 登录成功，生成 Token
+            String token = JwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole()); // 注意：User实体里叫role，不是roleType
 
             // 3. 将用户信息和 Token 一并打包放入 Map 中返回给前端
             Map<String, Object> data = new HashMap<>();
@@ -42,5 +47,17 @@ public class UserController {
             // 捕获 Service 层抛出的异常（如账号不存在、密码错误）
             return Result.error(e.getMessage());
         }
+    }
+
+    /**
+     * 处理注册请求
+     */
+    @PostMapping("/register")
+    public Result<String> register(@RequestBody User user) {
+        String msg = userService.register(user);
+        if ("注册成功".equals(msg)) {
+            return Result.success(msg);
+        }
+        return Result.error(msg);
     }
 }
