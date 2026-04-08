@@ -15,10 +15,14 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new AuthInterceptor())
                 // 拦截所有的业务接口
                 .addPathPatterns("/api/**", "/user/**", "/product/**")
-                // 放行登录接口、无需登录就能浏览的商品列表接口
+                // 👇 核心修复：在这里加上 "/user/register" ！！！
                 .excludePathPatterns(
                         "/user/login",
+                        "/user/register",    // 🌟 给注册接口放行！
+                        "/api/user/login",   // 兜底
+                        "/api/user/register",// 兜底
                         "/product/list",
+                        "/api/product/list",
                         "/product/{id}"
                 );
     }

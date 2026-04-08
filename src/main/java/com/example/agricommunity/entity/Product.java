@@ -15,4 +15,5 @@ public class Product {
     private String imageUrl;
     private String description;
     private Integer status;
+
 }

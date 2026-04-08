@@ -17,47 +17,53 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    /**
-     * 处理登录请求，并在成功后颁发 JWT Token
-     * 测试路径: POST http://localhost:8080/user/login
-     */
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody User loginUser) {
         try {
-// 1. 调用 Service 层执行具体的登录校验逻辑
             User user = userService.login(loginUser.getUsername(), loginUser.getPassword());
 
-            // 👇 新增判空拦截：如果账号密码错误，返回错误提示
             if (user == null) {
                 return Result.error("用户名或密码错误");
             }
 
-            // 2. 登录成功，生成 Token
-            String token = JwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole()); // 注意：User实体里叫role，不是roleType
+            String token = JwtUtils.generateToken(user.getId(), user.getUsername(), user.getRole());
 
-            // 3. 将用户信息和 Token 一并打包放入 Map 中返回给前端
             Map<String, Object> data = new HashMap<>();
             data.put("user", user);
             data.put("token", token);
 
-            // 4. 返回成功结果
             return Result.success("登录成功", data);
 
         } catch (RuntimeException e) {
-            // 捕获 Service 层抛出的异常（如账号不存在、密码错误）
             return Result.error(e.getMessage());
         }
     }
 
     /**
-     * 处理注册请求
+     * 处理注册请求（修复 Integer 类型问题）
      */
     @PostMapping("/register")
     public Result<String> register(@RequestBody User user) {
-        String msg = userService.register(user);
-        if ("注册成功".equals(msg)) {
-            return Result.success(msg);
+        try {
+            // 🌟 防御 1：因为 role 是 Integer 类型，只需判断是否为 null。
+            // 默认给普通用户角色（假设 1 代表普通居民，如果是 0 请你自行改成 0）
+            if (user.getRole() == null) {
+                user.setRole(1);
+            }
+
+            // 执行注册业务逻辑
+            String msg = userService.register(user);
+
+            if ("注册成功".equals(msg)) {
+                return Result.success(msg);
+            } else {
+                return Result.error(msg); // 可能是“用户名已存在”等业务提示
+            }
+
+        } catch (Exception e) {
+            // 🌟 防御 2：哪怕数据库连不上、SQL 写错了，也绝对不能崩溃！
+            e.printStackTrace();
+            return Result.error("后端发生异常：" + e.getMessage());
         }
-        return Result.error(msg);
     }
 }
