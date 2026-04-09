@@ -6,9 +6,7 @@ import com.example.agricommunity.entity.Product;
 import com.example.agricommunity.mapper.ProductMapper;
 import com.example.agricommunity.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,5 +30,16 @@ public class ProductController {
         // 把前端传过来的搜索词交给数据库
         List<Product> list = productMapper.selectProductList(keyword);
         return Result.success(list);
+    }
+
+    // 🌟 新增：手机端调用发布商品的接口
+    @PostMapping("/add")
+    public Result<String> addProduct(@RequestBody Product product) {
+        try {
+            String msg = productService.addProduct(product);
+            return Result.success(msg);
+        } catch (Exception e) {
+            return Result.error("后端发生异常：" + e.getMessage());
+        }
     }
 }

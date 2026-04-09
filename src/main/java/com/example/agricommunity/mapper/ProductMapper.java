@@ -20,4 +20,9 @@ public interface ProductMapper {
     // 更新商品的状态 (比如把 0 改成 1 也就是上架)
     @Update("UPDATE t_product SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    // 农户发布新商品（注意 status 默认为 0 待审核）
+    @org.apache.ibatis.annotations.Insert("INSERT INTO t_product(farmer_id, name, category, price, stock, unit, image_url, description, status) " +
+            "VALUES(#{farmerId}, #{name}, #{category}, #{price}, #{stock}, #{unit}, #{imageUrl}, #{description}, 0)")
+    int insertProduct(com.example.agricommunity.entity.Product product);
 }

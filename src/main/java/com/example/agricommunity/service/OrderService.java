@@ -22,7 +22,6 @@ public class OrderService {
     @Autowired
     private OrderMapper orderMapper;
 
-    // @Transactional 表示开启事务，一旦报错，所有数据库操作都会回滚（撤销），防止钱扣了订单没生成！
     @Transactional
     public String checkout(Long userId) {
         // 1. 查询该用户购物车里的所有商品
@@ -40,21 +39,21 @@ public class OrderService {
 
         // 3. 生成主订单
         Order order = new Order();
-        order.setOrderNo(UUID.randomUUID().toString().replace("-", "")); // 生成唯一流水号
+        order.setOrderNo(UUID.randomUUID().toString().replace("-", ""));
         order.setUserId(userId);
-        order.setLeaderId(2L); // 假定送到ID为2的团长那里
-        order.setCommunityId(1L); // 假定送到ID为1的阳光小区
+        order.setLeaderId(2L);
+        order.setCommunityId(1L);
         order.setTotalAmount(total);
-        order.setStatus(1); // 假设直接付款成功，状态变为待发货
+        // 🌟 修改点 1：将下单成功的初始状态改为 0（完美对应 Vue 里的"待发货"）
+        order.setStatus(0);
         orderMapper.insertOrder(order);
-        // 此时 order.getId() 已经有值了！
 
         // 4. 生成订单明细
         for (CartVO cartItem : cartList) {
             OrderItem orderItem = new OrderItem();
-            orderItem.setOrderId(order.getId()); // 绑定刚才生成的主订单ID
+            orderItem.setOrderId(order.getId());
             orderItem.setProductId(cartItem.getProductId());
-            orderItem.setFarmerId(3L); // 假定商品都是ID为3的农户的
+            orderItem.setFarmerId(3L);
             orderItem.setProductName(cartItem.getProductName());
             orderItem.setProductPrice(cartItem.getPrice());
             orderItem.setQuantity(cartItem.getQuantity());
@@ -70,5 +69,15 @@ public class OrderService {
 
     public List<OrderVO> getOrderList(Long userId) {
         return orderMapper.selectOrderList(userId);
+    }
+
+    // 🌟 修改点 2：新增【发货逻辑】
+    public String shipOrder(Long orderId) {
+        // 调用 Mapper 将状态更新为 1（已发货）
+        int rows = orderMapper.updateOrderStatus(orderId, 1);
+        if (rows > 0) {
+            return "发货成功";
+        }
+        return "发货失败，订单可能不存在";
     }
 }
