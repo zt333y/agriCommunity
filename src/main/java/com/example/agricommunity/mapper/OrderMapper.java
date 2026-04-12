@@ -5,6 +5,7 @@ import com.example.agricommunity.entity.OrderItem;
 import com.example.agricommunity.entity.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,4 +42,12 @@ public interface OrderMapper {
             "FROM t_order WHERE create_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) " +
             "GROUP BY date ORDER BY date")
     List<Map<String, Object>> selectLastSevenDaysSales();
+
+    // 🌟 获取所有订单 (团长需要查看流转到社区的订单)
+    @Select("SELECT * FROM t_order ORDER BY create_time DESC")
+    List<OrderVO> selectAllOrders();
+
+    // 🌟 通用更新订单状态方法
+    @Update("UPDATE t_order SET status = #{status} WHERE id = #{orderId}")
+    int updateStatus(Long orderId, Integer status);
 }
