@@ -5,8 +5,9 @@
     <select id="selectProductList" resultType="com.example.agricommunity.entity.Product">
         SELECT * FROM t_product
         <where>
+            status = 1
             <if test="keyword != null and keyword != ''">
-                name LIKE CONCAT('%', #{keyword}, '%')
+                AND name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
     </select>

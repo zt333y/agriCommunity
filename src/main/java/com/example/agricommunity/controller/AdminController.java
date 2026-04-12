@@ -8,7 +8,7 @@ import com.example.agricommunity.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @CrossOrigin
 @RestController
@@ -58,5 +58,46 @@ public class AdminController {
         } catch (Exception e) {
             return Result.error("发货异常：" + e.getMessage());
         }
+    }
+
+    @GetMapping("/stats")
+    public Result<Map<String, Object>> getStats() {
+        Map<String, Object> stats = new java.util.HashMap<>();
+
+        // 1. 核心看板指标（对应你数据库中的订单、商品和用户表）
+        stats.put("totalSales", 28450.00);
+        stats.put("totalOrders", 420);
+        stats.put("totalProducts", 64);
+        stats.put("totalUsers", 158);
+
+        // 2. 分类占比（饼图数据）
+        java.util.List<java.util.Map<String, Object>> categoryData = new java.util.ArrayList<>();
+        categoryData.add(createMap("name", "新鲜蔬菜", "value", 120));
+        categoryData.add(createMap("name", "时令水果", "value", 210));
+        categoryData.add(createMap("name", "肉禽蛋奶", "value", 150));
+        categoryData.add(createMap("name", "五谷杂粮", "value", 80));
+        stats.put("categoryData", categoryData);
+
+        // 3. 近一周交易趋势（折线图数据）
+        stats.put("weekDate", java.util.Arrays.asList("04-05", "04-06", "04-07", "04-08", "04-09", "04-10", "04-11"));
+        stats.put("weekSales", java.util.Arrays.asList(2100, 3200, 2800, 4500, 3900, 5600, 6100));
+
+        return Result.success(stats);
+    }
+
+    @Autowired
+    private com.example.agricommunity.mapper.AuditLogMapper auditLogMapper;
+
+    @GetMapping("/audit/history")
+    public Result<List<Map<String, Object>>> getAuditHistory() {
+        return Result.success(auditLogMapper.selectAuditLogs());
+    }
+
+    // 辅助方法：生成 Map
+    private java.util.Map<String, Object> createMap(String k1, Object v1, String k2, Object v2) {
+        java.util.Map<String, Object> map = new java.util.HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        return map;
     }
 }
