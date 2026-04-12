@@ -28,4 +28,13 @@ public class ProductService {
         }
         return "发布失败，请稍后再试";
     }
+
+    public List<Product> getMyProducts(Long farmerId) {
+        return productMapper.selectProductsByFarmerId(farmerId);
+    }
+
+    public String deleteProduct(Long id) {
+        int rows = productMapper.deleteById(id);
+        return rows > 0 ? "删除成功" : "商品不存在";
+    }
 }

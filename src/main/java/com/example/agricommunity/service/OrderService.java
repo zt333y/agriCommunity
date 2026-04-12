@@ -80,4 +80,14 @@ public class OrderService {
         }
         return "发货失败，订单可能不存在";
     }
+
+    // 🌟 新增：【确认收货逻辑】
+    public String receiveOrder(Long orderId) {
+        // 调用 Mapper 将状态更新为 2（已完成）
+        int rows = orderMapper.updateOrderStatus(orderId, 2);
+        if (rows > 0) {
+            return "收货成功";
+        }
+        return "收货失败，订单可能不存在";
+    }
 }

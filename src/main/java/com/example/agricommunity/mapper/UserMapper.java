@@ -3,6 +3,7 @@ package com.example.agricommunity.mapper;
 import com.example.agricommunity.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface UserMapper {
@@ -14,4 +15,7 @@ public interface UserMapper {
 
     // 插入新用户（注册用）
     void insertUser(User user);
+
+    @Select("SELECT COUNT(*) FROM sys_user")
+    int countTotalUsers();
 }

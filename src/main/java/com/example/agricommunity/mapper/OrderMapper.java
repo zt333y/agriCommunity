@@ -6,7 +6,9 @@ import com.example.agricommunity.entity.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
@@ -27,4 +29,16 @@ public interface OrderMapper {
     @org.apache.ibatis.annotations.Update("UPDATE t_order SET status = #{status} WHERE id = #{orderId}")
     int updateOrderStatus(@org.apache.ibatis.annotations.Param("orderId") Long orderId,
                           @org.apache.ibatis.annotations.Param("status") Integer status);
+
+    @Select("SELECT IFNULL(SUM(total_amount), 0) FROM t_order WHERE status >= 1")
+    BigDecimal sumTotalSales();
+
+    @Select("SELECT COUNT(*) FROM t_order")
+    int countTotalOrders();
+
+    // 统计近七天每天的销售额 (MySQL 语法)
+    @Select("SELECT DATE_FORMAT(create_time, '%m-%d') as date, SUM(total_amount) as sales " +
+            "FROM t_order WHERE create_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) " +
+            "GROUP BY date ORDER BY date")
+    List<Map<String, Object>> selectLastSevenDaysSales();
 }

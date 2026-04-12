@@ -1,12 +1,10 @@
 package com.example.agricommunity.mapper;
 
 import com.example.agricommunity.entity.Product;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ProductMapper {
@@ -25,4 +23,17 @@ public interface ProductMapper {
     @org.apache.ibatis.annotations.Insert("INSERT INTO t_product(farmer_id, name, category, price, stock, unit, image_url, description, status) " +
             "VALUES(#{farmerId}, #{name}, #{category}, #{price}, #{stock}, #{unit}, #{imageUrl}, #{description}, 0)")
     int insertProduct(com.example.agricommunity.entity.Product product);
+
+    @Select("SELECT COUNT(*) FROM t_product WHERE status = 1")
+    int countTotalProducts();
+
+    @Select("SELECT category as name, COUNT(*) as value FROM t_product GROUP BY category")
+    List<Map<String, Object>> selectCategoryStats();
+
+    // 查询属于某个农户的所有商品（无论审核状态）
+    @Select("SELECT * FROM t_product WHERE farmer_id = #{farmerId} ORDER BY create_time DESC")
+    List<Product> selectProductsByFarmerId(Long farmerId);
+
+    @Delete("DELETE FROM t_product WHERE id = #{id}")
+    int deleteById(Long id);
 }

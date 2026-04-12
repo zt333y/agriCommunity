@@ -42,4 +42,20 @@ public class OrderController {
 
         return Result.success(orderService.getOrderList(userId));
     }
+
+    /**
+     * 确认收货接口
+     */
+    @PostMapping("/receive")
+    public Result<String> receiveOrder(Long orderId) {
+        try {
+            String msg = orderService.receiveOrder(orderId);
+            if ("收货成功".equals(msg)) {
+                return Result.success(msg);
+            }
+            return Result.error(msg);
+        } catch (Exception e) {
+            return Result.error("收货异常：" + e.getMessage());
+        }
+    }
 }

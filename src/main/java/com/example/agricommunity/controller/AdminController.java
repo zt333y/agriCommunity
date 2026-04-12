@@ -62,27 +62,12 @@ public class AdminController {
 
     @GetMapping("/stats")
     public Result<Map<String, Object>> getStats() {
-        Map<String, Object> stats = new java.util.HashMap<>();
-
-        // 1. 核心看板指标（对应你数据库中的订单、商品和用户表）
-        stats.put("totalSales", 28450.00);
-        stats.put("totalOrders", 420);
-        stats.put("totalProducts", 64);
-        stats.put("totalUsers", 158);
-
-        // 2. 分类占比（饼图数据）
-        java.util.List<java.util.Map<String, Object>> categoryData = new java.util.ArrayList<>();
-        categoryData.add(createMap("name", "新鲜蔬菜", "value", 120));
-        categoryData.add(createMap("name", "时令水果", "value", 210));
-        categoryData.add(createMap("name", "肉禽蛋奶", "value", 150));
-        categoryData.add(createMap("name", "五谷杂粮", "value", 80));
-        stats.put("categoryData", categoryData);
-
-        // 3. 近一周交易趋势（折线图数据）
-        stats.put("weekDate", java.util.Arrays.asList("04-05", "04-06", "04-07", "04-08", "04-09", "04-10", "04-11"));
-        stats.put("weekSales", java.util.Arrays.asList(2100, 3200, 2800, 4500, 3900, 5600, 6100));
-
-        return Result.success(stats);
+        // 🌟 彻底告别死数据，调用 Service 里的数据库查询逻辑
+        try {
+            return Result.success(adminService.getRealStats());
+        } catch (Exception e) {
+            return Result.error("统计数据抓取失败：" + e.getMessage());
+        }
     }
 
     @Autowired

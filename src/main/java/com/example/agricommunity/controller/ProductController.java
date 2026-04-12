@@ -42,4 +42,24 @@ public class ProductController {
             return Result.error("后端发生异常：" + e.getMessage());
         }
     }
+
+    /**
+     * 获取当前登录农户发布的商品列表
+     */
+    @GetMapping("/my")
+    public Result<List<Product>> getMyProducts(jakarta.servlet.http.HttpServletRequest request) {
+        // 从拦截器中获取真实的登录用户 ID (此时该用户角色应该是农户)
+        Long farmerId = Long.valueOf(request.getAttribute("currentUserId").toString());
+        return Result.success(productService.getMyProducts(farmerId));
+    }
+
+    @PostMapping("/delete")
+    public Result<String> deleteProduct(Long id) {
+        try {
+            String msg = productService.deleteProduct(id);
+            return Result.success(msg);
+        } catch (Exception e) {
+            return Result.error("删除异常：" + e.getMessage());
+        }
+    }
 }
