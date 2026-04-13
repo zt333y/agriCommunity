@@ -1,10 +1,13 @@
 package com.example.agricommunity.controller;
 
 import com.example.agricommunity.common.Result;
+import com.example.agricommunity.entity.Apply;
 import com.example.agricommunity.mapper.ApplyMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/apply")
