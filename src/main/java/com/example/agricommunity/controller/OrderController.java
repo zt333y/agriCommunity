@@ -57,4 +57,32 @@ public class OrderController {
         orderMapper.updateStatus(orderId, 2);
         return Result.success("核销成功，订单已完成流转");
     }
+
+    // 🌟 1. 农户专属功能：获取今日采摘/待发货汇总清单
+    @GetMapping("/pickingList")
+    public Result<List<com.example.agricommunity.entity.FarmerPickingVO>> getPickingList(HttpServletRequest request) {
+        // 获取当前登录农户的真实 ID
+        Long farmerId = Long.valueOf(request.getAttribute("currentUserId").toString());
+        return Result.success(orderMapper.selectPickingList(farmerId));
+    }
+
+    // 🌟 2. 农户专属功能：标记订单为“已发货” (状态从 0 -> 1)
+    // 实际业务中农户可以针对单个订单发货，或者通过扫码发货
+    @PostMapping("/ship")
+    public Result<String> shipOrder(Long orderId) {
+        // 复用之前写好的更新状态 SQL
+        orderMapper.updateStatus(orderId, 1);
+        return Result.success("发货成功，已流转至社区团长端");
+    }
+
+    // 🌟 农户专属：按商品一键批量发货
+    @PostMapping("/shipByProduct")
+    public Result<String> shipByProduct(Long productId, HttpServletRequest request) {
+        Long farmerId = Long.valueOf(request.getAttribute("currentUserId").toString());
+        int rows = orderMapper.shipByProduct(farmerId, productId);
+        if (rows > 0) {
+            return Result.success("一键发货成功，商品已流转至社区团长端！");
+        }
+        return Result.error("暂无需要发货的订单");
+    }
 }
