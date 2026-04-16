@@ -27,4 +27,9 @@ public class UserService {
         userMapper.insertUser(user);
         return "注册成功";
     }
+
+    // 🌟 新增：更新地址业务逻辑
+    public boolean updateAddress(Long userId, String address) {
+        return userMapper.updateAddress(userId, address) > 0;
+    }
 }

@@ -21,9 +21,10 @@ public class OrderController {
     private OrderMapper orderMapper; // 🌟 之前你漏了这一句，导致下面所有方法都报红
 
     @PostMapping("/create")
-    public Result<String> createOrder(HttpServletRequest request) {
+    public Result<String> createOrder(HttpServletRequest request, @RequestParam("address") String address) {
         Long userId = Long.valueOf(request.getAttribute("currentUserId").toString());
-        String msg = orderService.checkout(userId);
+        // 🌟 把地址传给 Service
+        String msg = orderService.checkout(userId, address);
         return "下单成功".equals(msg) ? Result.success(msg) : Result.error(msg);
     }
 

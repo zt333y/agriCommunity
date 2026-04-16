@@ -66,4 +66,15 @@ public class UserController {
             return Result.error("后端发生异常：" + e.getMessage());
         }
     }
+
+    // 🌟 新增：收货地址更新接口
+    @PostMapping("/updateAddress")
+    public Result<String> updateAddress(@RequestParam Long userId, @RequestParam String address) {
+        boolean success = userService.updateAddress(userId, address);
+        if (success) {
+            return Result.success("收货地址更新成功");
+        } else {
+            return Result.error("更新失败，用户不存在");
+        }
+    }
 }

@@ -22,4 +22,8 @@ public interface UserMapper {
     // 🌟 这个方法 XML 里没有，可以保留注解方式
     @Update("UPDATE sys_user SET role = #{role} WHERE id = #{userId}")
     int updateRole(@Param("userId") Long userId, @Param("role") Integer role);
+
+    // 🌟 新增：更新用户收货地址
+    @Update("UPDATE sys_user SET address = #{address} WHERE id = #{userId}")
+    int updateAddress(@Param("userId") Long userId, @Param("address") String address);
 }

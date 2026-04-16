@@ -23,18 +23,15 @@ public class OrderService {
     private OrderMapper orderMapper;
 
     @Transactional
-    public String checkout(Long userId) {
-        // 1. 查询该用户购物车里的所有商品
+    public String checkout(Long userId, String address) { // 🌟 接收 address
+        // 1. 查询购物车商品 (代码不变...)
         List<CartVO> cartList = cartMapper.selectCartList(userId);
-        if (cartList == null || cartList.isEmpty()) {
-            return "购物车是空的！";
-        }
+        if (cartList == null || cartList.isEmpty()) return "购物车是空的！";
 
-        // 2. 计算总金额
+        // 2. 计算金额 (代码不变...)
         BigDecimal total = BigDecimal.ZERO;
         for (CartVO item : cartList) {
-            BigDecimal itemTotal = item.getPrice().multiply(new BigDecimal(item.getQuantity()));
-            total = total.add(itemTotal);
+            total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
         }
 
         // 3. 生成主订单
@@ -44,11 +41,13 @@ public class OrderService {
         order.setLeaderId(2L);
         order.setCommunityId(1L);
         order.setTotalAmount(total);
-        // 🌟 修改点 1：将下单成功的初始状态改为 0（完美对应 Vue 里的"待发货"）
         order.setStatus(0);
+
+        order.setAddress(address); // 🌟 核心：将地址保存到订单对象中！
+
         orderMapper.insertOrder(order);
 
-        // 4. 生成订单明细
+        // 4. 生成订单明细并清空购物车 (代码不变...)
         for (CartVO cartItem : cartList) {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrderId(order.getId());
@@ -60,8 +59,6 @@ public class OrderService {
             orderItem.setTotalPrice(cartItem.getPrice().multiply(new BigDecimal(cartItem.getQuantity())));
             orderMapper.insertOrderItem(orderItem);
         }
-
-        // 5. 清空该用户的购物车
         cartMapper.deleteCartByUserId(userId);
 
         return "下单成功";

@@ -12,4 +12,5 @@ public class OrderVO {
     private Integer status;      // 状态：0待付款，1待发货，2已发货等
     private Date createTime;     // 下单时间
     private String productNames; // 绝妙设计：把订单里的所有商品名拼成一个字符串返回给手机
+    private String address; // 收货地址字段，方便团长和居民查看
 }
