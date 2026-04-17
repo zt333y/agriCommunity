@@ -10,4 +10,5 @@ public class CartVO {
     private String productName; // 商品名称（从t_product表连表查出来）
     private BigDecimal price;   // 商品单价
     private Integer quantity; // 购买数量
+    private String imageUrl;
 }

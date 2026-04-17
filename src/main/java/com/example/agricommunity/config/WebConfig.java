@@ -4,6 +4,7 @@ import com.example.agricommunity.interceptor.AuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -15,19 +16,19 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new AuthInterceptor())
                 // 拦截所有的业务接口
                 .addPathPatterns("/api/**", "/user/**", "/product/**")
-                // 👇 核心修复：在这里加上 "/user/register" ！！！
                 .excludePathPatterns(
                         "/user/login",
-                        "/user/register",    // 🌟 给注册接口放行！
-                        "/api/user/login",   // 兜底
-                        "/api/user/register",// 兜底
+                        "/user/register",
+                        "/api/user/login",
+                        "/api/user/register",
                         "/product/list",
                         "/api/product/list",
-                        "/product/{id}"
+                        "/product/{id}",
+                        "/uploads/**"        // 🌟 核心新增：必须给图片访问路径放行，否则前端看不了图片！
                 );
     }
 
-    // 配置全局跨域 (配置了这个，Controller 里的 @CrossOrigin 就可以删掉了)
+    // 配置全局跨域
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
@@ -36,5 +37,14 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
+    }
+
+    // 🌟 核心新增：开放 uploads 文件夹的静态资源访问权限
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String projectPath = System.getProperty("user.dir");
+        // 当访问 http://你的IP:8080/uploads/xxx.jpg 时，直接去电脑项目根目录的 uploads 文件夹里找
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + projectPath + "/uploads/");
     }
 }

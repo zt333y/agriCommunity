@@ -21,15 +21,24 @@ public class CartController {
         if (cart.getQuantity() == null) {
             cart.setQuantity(1);
         }
-        // 存入数据库
-        cartMapper.insertCart(cart);
+
+        // 🌟 核心修复：加入之前，先去查一下这个用户是不是已经加过这个商品了？
+        Cart existCart = cartMapper.selectCartByUserIdAndProductId(cart.getUserId(), cart.getProductId());
+
+        if (existCart != null) {
+            // 🌟 如果已经存在，直接更新数量 (例如原来的2个 + 这次加的1个 = 3个)
+            cartMapper.updateCartQuantity(existCart.getId(), cart.getQuantity());
+        } else {
+            // 🌟 如果不存在，才作为新的一行数据插入数据库
+            cartMapper.insertCart(cart);
+        }
+
         return Result.success("成功加入购物车！");
     }
 
     //获取购物车列表接口
     @GetMapping("/list")
     public Result<List<CartVO>> getList(Long userId) {
-        // 如果前端没传 userId，为了测试方便，我们默认查询管理员(ID为1)的购物车
         if (userId == null) {
             userId = 1L;
         }

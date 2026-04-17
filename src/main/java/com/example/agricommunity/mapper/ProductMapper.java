@@ -36,4 +36,8 @@ public interface ProductMapper {
 
     @Delete("DELETE FROM t_product WHERE id = #{id}")
     int deleteById(Long id);
+
+    // 🌟 新增：修改商品信息的 SQL
+    @Update("UPDATE t_product SET name=#{name}, category=#{category}, price=#{price}, stock=#{stock}, unit=#{unit}, description=#{description}, image_url=#{imageUrl} WHERE id=#{id} AND farmer_id=#{farmerId}")
+    int updateProduct(Product product);
 }

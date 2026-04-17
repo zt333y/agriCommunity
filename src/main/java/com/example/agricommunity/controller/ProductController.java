@@ -62,4 +62,11 @@ public class ProductController {
             return Result.error("删除异常：" + e.getMessage());
         }
     }
+
+    // 🌟 新增：修改商品接口
+    @PostMapping("/update")
+    public Result<String> updateProduct(@RequestBody Product product) {
+        int rows = productMapper.updateProduct(product);
+        return rows > 0 ? Result.success("修改成功") : Result.error("修改失败，可能无权限");
+    }
 }

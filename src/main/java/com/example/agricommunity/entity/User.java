@@ -12,4 +12,5 @@ public class User {
      * 角色：0-居民, 1-农户, 2-团长, 3-管理员
      */
     private Integer role;
+    private String address;
 }
