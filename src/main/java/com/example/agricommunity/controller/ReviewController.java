@@ -27,4 +27,10 @@ public class ReviewController {
     public Result<List<ReviewVO>> getReviewList() {
         return Result.success(reviewMapper.selectReviewList());
     }
+
+    // 🌟 新增：前端商品详情页调用，获取该商品下的所有评价
+    @GetMapping("/product")
+    public Result<List<ReviewVO>> getProductReviews(@RequestParam Long productId) {
+        return Result.success(reviewMapper.selectByProductId(productId));
+    }
 }

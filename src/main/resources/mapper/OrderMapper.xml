@@ -19,7 +19,9 @@
             o.total_amount as totalAmount,
             o.status,
             o.create_time as createTime,
-            o.address,  (SELECT GROUP_CONCAT(product_name SEPARATOR '、') FROM t_order_item WHERE order_id = o.id) as productNames
+            o.address,
+            (SELECT GROUP_CONCAT(product_name SEPARATOR '、') FROM t_order_item WHERE order_id = o.id) as productNames,
+            (SELECT product_id FROM t_order_item WHERE order_id = o.id LIMIT 1) as productId
         FROM t_order o
         WHERE o.user_id = #{userId}
         ORDER BY o.create_time DESC

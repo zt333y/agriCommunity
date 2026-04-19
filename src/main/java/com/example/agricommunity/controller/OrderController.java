@@ -1,6 +1,7 @@
 package com.example.agricommunity.controller;
 
 import com.example.agricommunity.common.Result;
+import com.example.agricommunity.entity.OrderItem;
 import com.example.agricommunity.entity.OrderVO;
 import com.example.agricommunity.service.OrderService;
 import com.example.agricommunity.mapper.OrderMapper; // 🌟 必须手动导包
@@ -85,5 +86,11 @@ public class OrderController {
             return Result.success("一键发货成功，商品已流转至社区团长端！");
         }
         return Result.error("暂无需要发货的订单");
+    }
+
+    // 🌟 新增：获取订单下的所有商品列表，用于多商品分别评价
+    @GetMapping("/items")
+    public Result<List<OrderItem>> getOrderItems(@RequestParam Long orderId) {
+        return Result.success(orderMapper.selectItemsByOrderId(orderId));
     }
 }

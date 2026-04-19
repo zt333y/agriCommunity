@@ -26,4 +26,15 @@ public interface UserMapper {
     // 🌟 新增：更新用户收货地址
     @Update("UPDATE sys_user SET address = #{address} WHERE id = #{userId}")
     int updateAddress(@Param("userId") Long userId, @Param("address") String address);
+
+    // 🌟 终极修复版：去掉了容易引发解析崩溃的空字符串判断，只判断 null
+    @Update("<script>" +
+            "UPDATE sys_user " +
+            "<set>" +
+            "  <if test=\"realName != null\">real_name = #{realName},</if>" +
+            "  <if test=\"password != null\">password = #{password},</if>" +
+            "</set>" +
+            "WHERE id = #{id}" +
+            "</script>")
+    int updateUser(com.example.agricommunity.entity.User user);
 }

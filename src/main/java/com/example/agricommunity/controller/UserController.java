@@ -2,6 +2,7 @@ package com.example.agricommunity.controller;
 
 import com.example.agricommunity.common.Result;
 import com.example.agricommunity.entity.User;
+import com.example.agricommunity.mapper.UserMapper;
 import com.example.agricommunity.service.UserService;
 import com.example.agricommunity.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    private UserMapper userMapper;
 
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody User loginUser) {
@@ -76,5 +78,12 @@ public class UserController {
         } else {
             return Result.error("更新失败，用户不存在");
         }
+    }
+
+    // 🌟 新增：处理移动端发来的修改个人资料请求
+    @PostMapping("/update")
+    public Result<String> updateProfile(@RequestBody com.example.agricommunity.entity.User user) {
+        userMapper.updateUser(user);
+        return Result.success("资料修改成功");
     }
 }
