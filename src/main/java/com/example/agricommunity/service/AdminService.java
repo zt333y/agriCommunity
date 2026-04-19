@@ -6,7 +6,7 @@ import com.example.agricommunity.entity.Product;
 import com.example.agricommunity.mapper.AuditLogMapper;
 import com.example.agricommunity.mapper.OrderMapper;
 import com.example.agricommunity.mapper.ProductMapper;
-import com.example.agricommunity.mapper.UserMapper; // 🌟 引入 UserMapper
+import com.example.agricommunity.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,32 +23,25 @@ public class AdminService {
     @Autowired
     private AuditLogMapper auditLogMapper;
     @Autowired
-    private UserMapper userMapper; // 🌟 注入用于统计用户数量
+    private UserMapper userMapper;
 
     /**
-     * 🌟 核心功能：获取大屏实时统计报表
-     * 整合了来自订单、商品、用户多个维度的数据库真实数据
+     * 获取大屏实时统计报表
      */
     public Map<String, Object> getRealStats() {
         Map<String, Object> stats = new HashMap<>();
 
-        // 1. 顶部四个核心 KPI 指标
-        // 销售额、订单总数、在售商品数、注册用户数
         stats.put("totalSales", orderMapper.sumTotalSales());
         stats.put("totalOrders", orderMapper.countTotalOrders());
         stats.put("totalProducts", productMapper.countTotalProducts());
         stats.put("totalUsers", userMapper.countTotalUsers());
 
-        // 2. 农产品分类占比数据（饼图专用）
-        // 期望格式: [{name: "蔬菜", value: 10}, ...]
         stats.put("categoryData", productMapper.selectCategoryStats());
 
-        // 3. 近七天交易金额趋势（折线图专用）
         List<Map<String, Object>> trendData = orderMapper.selectLastSevenDaysSales();
         List<String> dates = new ArrayList<>();
         List<Object> sales = new ArrayList<>();
 
-        // 将数据库查询的 List 拆解为 ECharts 需要的 X轴(日期) 和 Y轴(数值) 数组
         for (Map<String, Object> map : trendData) {
             dates.add(String.valueOf(map.get("date")));
             sales.add(map.get("sales"));
@@ -82,7 +75,10 @@ public class AdminService {
         log.setAdminId(adminId);
         log.setTargetId(productId);
         log.setActionType(status == 1 ? "AUDIT_PASS" : "AUDIT_REJECT");
-        auditLogMapper.insertLog(log);
+        log.setCreateTime(new Date()); // 🌟 补全时间字段
+
+        // 🌟 核心修复：调用更新后的 insert 方法！
+        auditLogMapper.insert(log);
 
         return status == 1 ? "审核通过，商品已成功上架" : "已驳回该商品";
     }

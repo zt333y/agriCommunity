@@ -75,9 +75,14 @@ public class AdminController {
 
     @GetMapping("/audit/history")
     public Result<List<Map<String, Object>>> getAuditHistory() {
-        return Result.success(auditLogMapper.selectAuditLogs());
+        try {
+            List<Map<String, Object>> logs = auditLogMapper.selectAuditLogs();
+            return Result.success(logs);
+        } catch (Exception e) {
+            e.printStackTrace(); // 在控制台打印具体的错误信息，方便调试
+            return Result.error("获取日志失败：" + e.getMessage());
+        }
     }
-
     // 辅助方法：生成 Map
     private java.util.Map<String, Object> createMap(String k1, Object v1, String k2, Object v2) {
         java.util.Map<String, Object> map = new java.util.HashMap<>();
