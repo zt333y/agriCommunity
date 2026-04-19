@@ -8,6 +8,7 @@ public class User {
     private String username;
     private String password;
     private String phone;
+    private String realName;
     /**
      * 角色：0-居民, 1-农户, 2-团长, 3-管理员
      */

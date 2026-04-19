@@ -17,6 +17,7 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
     private UserMapper userMapper;
 
     @PostMapping("/login")
