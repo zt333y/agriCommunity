@@ -17,6 +17,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    // 🌟 修复 1：这里必须加上 @Autowired！否则它是 null！
     @Autowired
     private UserMapper userMapper;
 
@@ -42,35 +44,24 @@ public class UserController {
         }
     }
 
-    /**
-     * 处理注册请求（修复 Integer 类型问题）
-     */
     @PostMapping("/register")
     public Result<String> register(@RequestBody User user) {
         try {
-            // 🌟 防御 1：因为 role 是 Integer 类型，只需判断是否为 null。
-            // 默认给普通用户角色（假设 1 代表普通居民，如果是 0 请你自行改成 0）
             if (user.getRole() == null) {
                 user.setRole(1);
             }
-
-            // 执行注册业务逻辑
             String msg = userService.register(user);
-
             if ("注册成功".equals(msg)) {
                 return Result.success(msg);
             } else {
-                return Result.error(msg); // 可能是“用户名已存在”等业务提示
+                return Result.error(msg);
             }
-
         } catch (Exception e) {
-            // 🌟 防御 2：哪怕数据库连不上、SQL 写错了，也绝对不能崩溃！
             e.printStackTrace();
             return Result.error("后端发生异常：" + e.getMessage());
         }
     }
 
-    // 🌟 新增：收货地址更新接口
     @PostMapping("/updateAddress")
     public Result<String> updateAddress(@RequestParam Long userId, @RequestParam String address) {
         boolean success = userService.updateAddress(userId, address);
@@ -81,9 +72,10 @@ public class UserController {
         }
     }
 
-    // 🌟 新增：处理移动端发来的修改个人资料请求
+    // 🌟 处理移动端发来的修改个人资料请求
     @PostMapping("/update")
-    public Result<String> updateProfile(@RequestBody com.example.agricommunity.entity.User user) {
+    public Result<String> updateProfile(@RequestBody User user) {
+        // 这里就不会再报空指针异常了
         userMapper.updateUser(user);
         return Result.success("资料修改成功");
     }

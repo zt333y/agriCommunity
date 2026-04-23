@@ -2,10 +2,7 @@ package com.example.agricommunity.mapper;
 
 import com.example.agricommunity.entity.Cart;
 import com.example.agricommunity.entity.CartVO;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -23,4 +20,12 @@ public interface CartMapper {
     // 🌟 新增：如果有了，就直接在这个数据的原有数量上累加
     @Update("UPDATE t_cart SET quantity = quantity + #{quantity} WHERE id = #{id}")
     int updateCartQuantity(@Param("id") Long id, @Param("quantity") Integer quantity);
+
+    // 🌟 新增：直接把数量设置为传入的精确值（用于前端加减号）
+    @Update("UPDATE t_cart SET quantity = #{quantity} WHERE id = #{cartId}")
+    int setQuantityExact(@Param("cartId") Long cartId, @Param("quantity") Integer quantity);
+
+    // 🌟 新增：根据购物车记录的 ID 删除商品
+    @Delete("DELETE FROM t_cart WHERE id = #{cartId}")
+    int deleteCartById(@Param("cartId") Long cartId);
 }

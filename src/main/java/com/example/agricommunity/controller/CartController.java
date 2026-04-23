@@ -45,4 +45,21 @@ public class CartController {
         List<CartVO> list = cartMapper.selectCartList(userId);
         return Result.success(list);
     }
+
+    // 🌟 新增：前端点击加减号时，直接把最终算好的数量传过来更新
+    @PostMapping("/updateQuantity")
+    public Result<String> updateQuantity(Long cartId, Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            return Result.error("数量必须大于0");
+        }
+        cartMapper.setQuantityExact(cartId, quantity);
+        return Result.success("数量修改成功");
+    }
+
+    // 🌟 新增：前端点击删除或者左滑删除时，调用此接口
+    @PostMapping("/delete")
+    public Result<String> deleteCartItem(Long cartId) {
+        cartMapper.deleteCartById(cartId);
+        return Result.success("商品已移出购物车");
+    }
 }

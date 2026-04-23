@@ -5,11 +5,11 @@
     <select id="selectProductList" resultType="com.example.agricommunity.entity.Product">
         SELECT * FROM t_product
         <where>
-            status = 1
             <if test="keyword != null and keyword != ''">
                 AND name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+        ORDER BY create_time DESC
     </select>
 
 </mapper>

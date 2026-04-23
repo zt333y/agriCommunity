@@ -25,11 +25,11 @@ public class ProductController {
      * 获取农产品列表接口
      * 访问地址：GET http://localhost:8080/api/product/list
      */
+// 🌟 接收前端的 keyword 参数（非必填）
     @GetMapping("/list")
-    public Result<List<Product>> getList(String keyword) {
-        // 把前端传过来的搜索词交给数据库
+    public Result<List<Product>> getProductList(@RequestParam(required = false) String keyword) {
         List<Product> list = productMapper.selectProductList(keyword);
-        return Result.success(list);
+        return Result.success("获取成功", list);
     }
 
     // 🌟 新增：手机端调用发布商品的接口

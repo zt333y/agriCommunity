@@ -2,15 +2,11 @@ package com.example.agricommunity.mapper;
 
 import com.example.agricommunity.entity.Product;
 import org.apache.ibatis.annotations.*;
-
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 public interface ProductMapper {
-    // 获取所有上架的商品列表
-    List<Product> selectProductList(@Param("keyword") String keyword);
-
     // 查询所有待审核的商品 (status = 0)
     @Select("SELECT * FROM t_product WHERE status = 0")
     List<Product> selectPendingProducts();
@@ -20,9 +16,9 @@ public interface ProductMapper {
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
 
     // 农户发布新商品（注意 status 默认为 0 待审核）
-    @org.apache.ibatis.annotations.Insert("INSERT INTO t_product(farmer_id, name, category, price, stock, unit, image_url, description, status) " +
+    @Insert("INSERT INTO t_product(farmer_id, name, category, price, stock, unit, image_url, description, status) " +
             "VALUES(#{farmerId}, #{name}, #{category}, #{price}, #{stock}, #{unit}, #{imageUrl}, #{description}, 0)")
-    int insertProduct(com.example.agricommunity.entity.Product product);
+    int insertProduct(Product product);
 
     @Select("SELECT COUNT(*) FROM t_product WHERE status = 1")
     int countTotalProducts();
@@ -37,7 +33,10 @@ public interface ProductMapper {
     @Delete("DELETE FROM t_product WHERE id = #{id}")
     int deleteById(Long id);
 
-    // 🌟 新增：修改商品信息的 SQL
+    // 修改商品信息的 SQL
     @Update("UPDATE t_product SET name=#{name}, category=#{category}, price=#{price}, stock=#{stock}, unit=#{unit}, description=#{description}, image_url=#{imageUrl} WHERE id=#{id} AND farmer_id=#{farmerId}")
     int updateProduct(Product product);
+
+    // 🌟 核心修复：去掉了这一头上的 @Select 注解，把具体的 SQL 逻辑全部交给 XML 文件处理，彻底解决冲突！
+    List<Product> selectProductList(@Param("keyword") String keyword);
 }
