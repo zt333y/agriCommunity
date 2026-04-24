@@ -2,6 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.agricommunity.mapper.OrderMapper">
 
+    <resultMap id="OrderVOMap" type="com.example.agricommunity.entity.OrderVO">
+        <id property="id" column="id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="address" column="address"/>
+        <result property="buyerName" column="buyer_name"/>
+
+        <collection property="items" ofType="com.example.agricommunity.entity.OrderItem"
+                    select="com.example.agricommunity.mapper.OrderMapper.selectItemsByOrderId" column="id"/>
+    </resultMap>
+
     <insert id="insertOrder" parameterType="com.example.agricommunity.entity.Order" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO t_order (order_no, user_id, leader_id, community_id, total_amount, status, address)
         VALUES (#{orderNo}, #{userId}, #{leaderId}, #{communityId}, #{totalAmount}, #{status}, #{address})
@@ -14,16 +27,21 @@
 
     <select id="selectOrderList" resultType="com.example.agricommunity.entity.OrderVO">
         SELECT
-            o.id,
-            o.order_no as orderNo,
-            o.total_amount as totalAmount,
-            o.status,
-            o.create_time as createTime,
-            o.address,
+            o.id, o.order_no as orderNo, o.total_amount as totalAmount,
+            o.status, o.create_time as createTime, o.address,
             (SELECT GROUP_CONCAT(product_name SEPARATOR '、') FROM t_order_item WHERE order_id = o.id) as productNames,
             (SELECT product_id FROM t_order_item WHERE order_id = o.id LIMIT 1) as productId
         FROM t_order o
         WHERE o.user_id = #{userId}
         ORDER BY o.create_time DESC
     </select>
+
+    <select id="selectOrdersByDistrict" resultMap="OrderVOMap">
+        SELECT o.*, u.username as buyer_name
+        FROM t_order o
+                 LEFT JOIN sys_user u ON o.user_id = u.id
+        WHERE o.address LIKE CONCAT('%', #{district}, '%')
+          AND o.status IN (1, 4) ORDER BY o.create_time DESC
+    </select>
+
 </mapper>

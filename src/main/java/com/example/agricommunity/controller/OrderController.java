@@ -3,8 +3,10 @@ package com.example.agricommunity.controller;
 import com.example.agricommunity.common.Result;
 import com.example.agricommunity.entity.OrderItem;
 import com.example.agricommunity.entity.OrderVO;
+import com.example.agricommunity.entity.User;
+import com.example.agricommunity.mapper.UserMapper;
 import com.example.agricommunity.service.OrderService;
-import com.example.agricommunity.mapper.OrderMapper; // 🌟 必须手动导包
+import com.example.agricommunity.mapper.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +21,14 @@ public class OrderController {
     private OrderService orderService;
 
     @Autowired
-    private OrderMapper orderMapper; // 🌟 之前你漏了这一句，导致下面所有方法都报红
+    private OrderMapper orderMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @PostMapping("/create")
     public Result<String> createOrder(HttpServletRequest request, @RequestParam("address") String address) {
         Long userId = Long.valueOf(request.getAttribute("currentUserId").toString());
-        // 🌟 把地址传给 Service
         String msg = orderService.checkout(userId, address);
         return "下单成功".equals(msg) ? Result.success(msg) : Result.error(msg);
     }
@@ -40,44 +44,58 @@ public class OrderController {
         return Result.success(orderService.receiveOrder(orderId));
     }
 
-    // 🌟 1. 团长获取社区订单列表
     @GetMapping("/leaderList")
-    public Result<List<OrderVO>> getLeaderOrders() {
-        return Result.success(orderMapper.selectAllOrders());
+    public Result<List<OrderVO>> getLeaderOrders(HttpServletRequest request) {
+        Long leaderId = Long.valueOf(request.getAttribute("currentUserId").toString());
+
+        User leader = userMapper.selectById(leaderId);
+        if (leader == null || leader.getAddress() == null) {
+            return Result.error("未获取到团长地址，无法分配订单");
+        }
+        String leaderAddr = leader.getAddress();
+
+        String district = "";
+        if (leaderAddr.contains("市") && leaderAddr.contains("区")) {
+            district = leaderAddr.substring(leaderAddr.indexOf("市") + 1, leaderAddr.indexOf("区") + 1);
+        } else if (leaderAddr.contains("区")) {
+            district = leaderAddr.substring(0, leaderAddr.indexOf("区") + 1);
+        } else if (leaderAddr.contains("县")) {
+            district = leaderAddr.substring(0, leaderAddr.indexOf("县") + 1);
+        }
+
+        if (district.isEmpty()) {
+            return Result.error("您的资料未包含明确的区/县信息，无法拉取辖区订单");
+        }
+
+        List<OrderVO> areaOrders = orderMapper.selectOrdersByDistrict(district);
+
+        return Result.success("获取本区域订单成功", areaOrders);
     }
 
-    // 🌟 2. 团长确认到货 (入库)
     @PostMapping("/arrive")
     public Result<String> arriveOrder(Long orderId) {
         orderMapper.updateStatus(orderId, 4);
         return Result.success("入库成功，已通知居民前来提货");
     }
 
-    // 🌟 3. 团长核销提货 (出库)
     @PostMapping("/verify")
     public Result<String> verifyOrder(Long orderId) {
         orderMapper.updateStatus(orderId, 2);
         return Result.success("核销成功，订单已完成流转");
     }
 
-    // 🌟 1. 农户专属功能：获取今日采摘/待发货汇总清单
     @GetMapping("/pickingList")
     public Result<List<com.example.agricommunity.entity.FarmerPickingVO>> getPickingList(HttpServletRequest request) {
-        // 获取当前登录农户的真实 ID
         Long farmerId = Long.valueOf(request.getAttribute("currentUserId").toString());
         return Result.success(orderMapper.selectPickingList(farmerId));
     }
 
-    // 🌟 2. 农户专属功能：标记订单为“已发货” (状态从 0 -> 1)
-    // 实际业务中农户可以针对单个订单发货，或者通过扫码发货
     @PostMapping("/ship")
     public Result<String> shipOrder(Long orderId) {
-        // 复用之前写好的更新状态 SQL
         orderMapper.updateStatus(orderId, 1);
         return Result.success("发货成功，已流转至社区团长端");
     }
 
-    // 🌟 农户专属：按商品一键批量发货
     @PostMapping("/shipByProduct")
     public Result<String> shipByProduct(Long productId, HttpServletRequest request) {
         Long farmerId = Long.valueOf(request.getAttribute("currentUserId").toString());
@@ -88,7 +106,6 @@ public class OrderController {
         return Result.error("暂无需要发货的订单");
     }
 
-    // 🌟 新增：获取订单下的所有商品列表，用于多商品分别评价
     @GetMapping("/items")
     public Result<List<OrderItem>> getOrderItems(@RequestParam Long orderId) {
         return Result.success(orderMapper.selectItemsByOrderId(orderId));

@@ -65,4 +65,7 @@ public interface OrderMapper {
     // 🌟 新增：根据订单ID查询这个订单里到底买了哪些商品明细
     @Select("SELECT * FROM t_order_item WHERE order_id = #{orderId}")
     List<OrderItem> selectItemsByOrderId(@Param("orderId") Long orderId);
+
+    // 🌟 团长专属：根据区/县模糊查询订单
+    List<OrderVO> selectOrdersByDistrict(@Param("district") String district);
 }

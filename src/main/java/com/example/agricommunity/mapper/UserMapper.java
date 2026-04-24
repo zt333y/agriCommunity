@@ -12,6 +12,10 @@ public interface UserMapper {
 
     void insertUser(User user);
 
+    // 🌟 核心修复：加上这一句，报错就没了
+    @Select("SELECT * FROM sys_user WHERE id = #{id}")
+    User selectById(@Param("id") Long id);
+
     @Select("SELECT COUNT(*) FROM sys_user")
     int countTotalUsers();
 
@@ -21,7 +25,6 @@ public interface UserMapper {
     @Update("UPDATE sys_user SET address = #{address} WHERE id = #{userId}")
     int updateAddress(@Param("userId") Long userId, @Param("address") String address);
 
-    // 🌟 修复 2：彻底把 realName 改成了 username！和你的数据库字段、User类完美对应
     @Update("<script>" +
             "UPDATE sys_user " +
             "<set>" +
