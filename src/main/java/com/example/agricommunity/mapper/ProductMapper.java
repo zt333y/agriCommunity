@@ -11,7 +11,7 @@ public interface ProductMapper {
     @Select("SELECT * FROM t_product WHERE status = 0")
     List<Product> selectPendingProducts();
 
-    // 更新商品的状态 (比如把 0 改成 1 也就是上架)
+    // 更新商品的状态 (如：1 为上架，3 为下架)
     @Update("UPDATE t_product SET status = #{status} WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
 
@@ -37,6 +37,7 @@ public interface ProductMapper {
     @Update("UPDATE t_product SET name=#{name}, category=#{category}, price=#{price}, stock=#{stock}, unit=#{unit}, description=#{description}, image_url=#{imageUrl} WHERE id=#{id} AND farmer_id=#{farmerId}")
     int updateProduct(Product product);
 
-    // 🌟 核心修复：去掉了这一头上的 @Select 注解，把具体的 SQL 逻辑全部交给 XML 文件处理，彻底解决冲突！
+    // 核心修复：把具体的 SQL 逻辑全部交给 XML 文件处理
     List<Product> selectProductList(@Param("keyword") String keyword);
+
 }

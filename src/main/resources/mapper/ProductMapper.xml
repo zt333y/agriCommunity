@@ -4,11 +4,10 @@
 
     <select id="selectProductList" resultType="com.example.agricommunity.entity.Product">
         SELECT * FROM t_product
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND name LIKE CONCAT('%', #{keyword}, '%')
-            </if>
-        </where>
+        WHERE status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR category LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
         ORDER BY create_time DESC
     </select>
 

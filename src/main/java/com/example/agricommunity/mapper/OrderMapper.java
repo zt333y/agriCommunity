@@ -62,8 +62,11 @@ public interface OrderMapper {
             "WHERE i.farmer_id = #{farmerId} AND i.product_id = #{productId} AND o.status = 0")
     int shipByProduct(@Param("farmerId") Long farmerId, @Param("productId") Long productId);
 
-    // 🌟 新增：根据订单ID查询这个订单里到底买了哪些商品明细
-    @Select("SELECT * FROM t_order_item WHERE order_id = #{orderId}")
+    // =======================================================
+    // 🌟 核心修改：连表 t_product 查询商品的缩略图 (imageUrl)
+    // 这样在 Android 端渲染订单列表时，就不会出现图片加载不出来的情况了
+    // =======================================================
+    @Select("SELECT i.*, p.image_url as imageUrl FROM t_order_item i LEFT JOIN t_product p ON i.product_id = p.id WHERE i.order_id = #{orderId}")
     List<OrderItem> selectItemsByOrderId(@Param("orderId") Long orderId);
 
     // 🌟 团长专属：根据区/县模糊查询订单

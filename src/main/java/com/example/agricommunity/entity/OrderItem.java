@@ -13,4 +13,5 @@ public class OrderItem {
     private BigDecimal productPrice; // 购买时的单价
     private Integer quantity;    // 数量
     private BigDecimal totalPrice; // 此项总价
+    private String imageUrl;
 }
