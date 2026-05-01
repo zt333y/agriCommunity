@@ -12,7 +12,6 @@ import com.example.agricommunity.entity.OrderVO;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -23,31 +22,32 @@ public class OrderService {
     private OrderMapper orderMapper;
 
     @Transactional
-    public String checkout(Long userId, String address) { // 🌟 接收 address
-        // 1. 查询购物车商品 (代码不变...)
+    public String checkout(Long userId, String address) {
         List<CartVO> cartList = cartMapper.selectCartList(userId);
         if (cartList == null || cartList.isEmpty()) return "购物车是空的！";
 
-        // 2. 计算金额 (代码不变...)
         BigDecimal total = BigDecimal.ZERO;
         for (CartVO item : cartList) {
             total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
         }
 
-        // 3. 生成主订单
         Order order = new Order();
-        order.setOrderNo(UUID.randomUUID().toString().replace("-", ""));
+
+        // 🌟 核心修改：生成 16 位纯数字订单号（时间戳后 10 位 + 6 位随机数）
+        String timeStr = String.valueOf(System.currentTimeMillis());
+        String timePart = timeStr.substring(timeStr.length() - 10); // 截取后10位
+        int randomPart = (int) ((Math.random() * 9 + 1) * 100000);  // 6位随机数
+        order.setOrderNo(timePart + randomPart);
+
         order.setUserId(userId);
         order.setLeaderId(2L);
         order.setCommunityId(1L);
         order.setTotalAmount(total);
         order.setStatus(0);
-
-        order.setAddress(address); // 🌟 核心：将地址保存到订单对象中！
+        order.setAddress(address);
 
         orderMapper.insertOrder(order);
 
-        // 4. 生成订单明细并清空购物车 (代码不变...)
         for (CartVO cartItem : cartList) {
             OrderItem orderItem = new OrderItem();
             orderItem.setOrderId(order.getId());
@@ -68,9 +68,7 @@ public class OrderService {
         return orderMapper.selectOrderList(userId);
     }
 
-    // 🌟 修改点 2：新增【发货逻辑】
     public String shipOrder(Long orderId) {
-        // 调用 Mapper 将状态更新为 1（已发货）
         int rows = orderMapper.updateOrderStatus(orderId, 1);
         if (rows > 0) {
             return "发货成功";
@@ -78,9 +76,7 @@ public class OrderService {
         return "发货失败，订单可能不存在";
     }
 
-    // 🌟 新增：【确认收货逻辑】
     public String receiveOrder(Long orderId) {
-        // 调用 Mapper 将状态更新为 2（已完成）
         int rows = orderMapper.updateOrderStatus(orderId, 2);
         if (rows > 0) {
             return "收货成功";
