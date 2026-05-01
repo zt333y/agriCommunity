@@ -18,10 +18,11 @@ public interface OrderMapper {
     // 基础下单逻辑
     int insertOrder(Order order);
     int insertOrderItem(OrderItem orderItem);
+
+    // 居民端：查询订单 (实现在 XML)
     List<OrderVO> selectOrderList(Long userId);
 
-    // 🌟 后台管理与统计逻辑
-    @Select("SELECT * FROM t_order ORDER BY create_time DESC")
+    // 🌟 修复：删除这里的 @Select 注解，让它去读取 XML 里的 resultMap，这样后台大屏才能看到商品明细！
     List<OrderVO> selectAllOrders();
 
     @Update("UPDATE t_order SET status = #{status} WHERE id = #{orderId}")
@@ -38,12 +39,9 @@ public interface OrderMapper {
             "GROUP BY date ORDER BY date")
     List<Map<String, Object>> selectLastSevenDaysSales();
 
-    // 🌟 核心：为社区团长提供的通用更新方法
     @Update("UPDATE t_order SET status = #{status} WHERE id = #{orderId}")
     int updateStatus(@Param("orderId") Long orderId, @Param("status") Integer status);
 
-    // 🌟 新增：农户高阶聚合查询 - 采摘发货清单汇总
-    // 逻辑：关联订单明细表、主订单表、商品表，筛选待发货(status=0)的订单，并按商品分组求和
     @Select("SELECT i.product_id AS productId, " +
             "       i.product_name AS productName, " +
             "       SUM(i.quantity) AS totalQuantity, " +
@@ -55,20 +53,14 @@ public interface OrderMapper {
             "GROUP BY i.product_id, i.product_name, p.unit")
     List<FarmerPickingVO> selectPickingList(@Param("farmerId") Long farmerId);
 
-    // 🌟 新增：农户专属功能 - 按商品一键发货
-    // 逻辑：将当前农户名下，包含指定商品且处于待发货(0)状态的订单，全部改为已发货(1)
     @Update("UPDATE t_order o JOIN t_order_item i ON o.id = i.order_id " +
             "SET o.status = 1 " +
             "WHERE i.farmer_id = #{farmerId} AND i.product_id = #{productId} AND o.status = 0")
     int shipByProduct(@Param("farmerId") Long farmerId, @Param("productId") Long productId);
 
-    // =======================================================
-    // 🌟 核心修改：连表 t_product 查询商品的缩略图 (imageUrl)
-    // 这样在 Android 端渲染订单列表时，就不会出现图片加载不出来的情况了
-    // =======================================================
     @Select("SELECT i.*, p.image_url as imageUrl FROM t_order_item i LEFT JOIN t_product p ON i.product_id = p.id WHERE i.order_id = #{orderId}")
     List<OrderItem> selectItemsByOrderId(@Param("orderId") Long orderId);
 
-    // 🌟 团长专属：根据区/县模糊查询订单
+    // 团长专属：根据区/县模糊查询订单 (实现在 XML)
     List<OrderVO> selectOrdersByDistrict(@Param("district") String district);
 }

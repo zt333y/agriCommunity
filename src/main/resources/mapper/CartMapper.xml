@@ -8,16 +8,14 @@
     </insert>
 
     <select id="selectCartList" resultType="com.example.agricommunity.entity.CartVO">
-        SELECT
-            c.id as cartId,
-            p.id as productId,
-            p.name as productName,
-            p.price as price,
-            c.quantity as quantity,
-            p.image_url as imageUrl  FROM t_cart c
-                                              INNER JOIN t_product p ON c.product_id = p.id
+        SELECT c.*, p.name as productName, p.price as price, p.image_url as imageUrl, p.farmer_id as farmerId
+        FROM t_cart c
+                 LEFT JOIN t_product p ON c.product_id = p.id
         WHERE c.user_id = #{userId}
     </select>
 
-    <delete id="deleteCartByUserId"> DELETE FROM t_cart WHERE user_id = #{userId} </delete>
+    <delete id="deleteCartByUserId">
+        DELETE FROM t_cart WHERE user_id = #{userId}
+    </delete>
+
 </mapper>

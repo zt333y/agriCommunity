@@ -11,4 +11,7 @@ public class CartVO {
     private BigDecimal price;   // 商品单价
     private Integer quantity; // 购买数量
     private String imageUrl;
+    private Long farmerId; // 记录商品归属农户
+    public Long getFarmerId() { return farmerId; }
+    public void setFarmerId(Long farmerId) { this.farmerId = farmerId; }
 }

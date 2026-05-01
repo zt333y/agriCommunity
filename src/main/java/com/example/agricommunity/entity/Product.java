@@ -15,5 +15,7 @@ public class Product {
     private String imageUrl;
     private String description;
     private Integer status;
-
+    private String farmerAddress; // 农户地址(计算产地用)
+    private Integer sales;        // 销量
+    private Double rating;        // 评分
 }

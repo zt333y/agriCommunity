@@ -39,4 +39,8 @@
           AND o.status IN (1, 4) ORDER BY o.create_time DESC
     </select>
 
+    <select id="selectAllOrders" resultMap="OrderVOMap">
+        SELECT * FROM t_order ORDER BY create_time DESC
+    </select>
+
 </mapper>
