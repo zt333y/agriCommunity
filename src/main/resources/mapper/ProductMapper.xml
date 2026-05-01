@@ -6,7 +6,8 @@
         SELECT p.*,
         u.address as farmerAddress,
         IFNULL((SELECT SUM(quantity) FROM t_order_item i JOIN t_order o ON i.order_id = o.id WHERE i.product_id = p.id AND o.status >= 1), 0) AS sales,
-        IFNULL((SELECT AVG(score) FROM t_review r WHERE r.product_id = p.id), 5.0) AS rating
+        /* 🌟 核心修复：移除 IFNULL(..., 5.0)，如果没有评价则返回 NULL，方便前端显示“无” */
+        (SELECT AVG(score) FROM t_review r WHERE r.product_id = p.id) AS rating
         FROM t_product p
         LEFT JOIN sys_user u ON p.farmer_id = u.id
         WHERE p.status = 1
@@ -15,5 +16,4 @@
         </if>
         ORDER BY p.create_time DESC
     </select>
-
 </mapper>
