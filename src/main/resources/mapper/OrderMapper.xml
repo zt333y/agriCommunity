@@ -36,11 +36,31 @@
         FROM t_order o
                  LEFT JOIN sys_user u ON o.user_id = u.id
         WHERE o.address LIKE CONCAT('%', #{district}, '%')
-          AND o.status IN (1, 4) ORDER BY o.create_time DESC
+          AND o.status >= 1
+        ORDER BY o.create_time DESC
     </select>
 
     <select id="selectAllOrders" resultMap="OrderVOMap">
         SELECT * FROM t_order ORDER BY create_time DESC
     </select>
+    <select id="sumTodaySales" resultType="java.lang.Double">
+        SELECT SUM(total_amount)
+        FROM t_order
+        WHERE DATE(create_time) = CURDATE()
+    </select>
 
+    <select id="countTodayOrders" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM t_order
+        WHERE DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="selectTodayCategoryStats" resultType="java.util.Map">
+        SELECT p.category AS name, SUM(oi.quantity) AS value
+        FROM t_order o
+            JOIN t_order_item oi ON o.id = oi.order_id
+            JOIN t_product p ON oi.product_id = p.id
+        WHERE DATE(o.create_time) = CURDATE()
+        GROUP BY p.category
+    </select>
 </mapper>

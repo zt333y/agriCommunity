@@ -11,7 +11,8 @@ import com.example.agricommunity.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.example.agricommunity.entity.AuditLog;
+import com.example.agricommunity.mapper.AuditLogMapper;
 import java.math.BigDecimal;
 import java.util.Date; // 🌟 新增导入 Date
 import java.util.List;
@@ -22,7 +23,7 @@ public class OrderService {
     @Autowired private CartMapper cartMapper;
     @Autowired private OrderMapper orderMapper;
     @Autowired private UserMapper userMapper;
-
+    @Autowired private AuditLogMapper auditLogMapper;
     /**
      * 用户下单逻辑
      */
@@ -98,7 +99,7 @@ public class OrderService {
         if (voList != null) {
             for (OrderVO vo : voList) {
                 // 如果订单状态为 4 (已到货)
-                if (vo.getStatus() != null && vo.getStatus() == 4) {
+                if (vo.getStatus() != null && (vo.getStatus() == 4 || vo.getStatus() == 6)) {
                     Long leaderId = vo.getLeaderId();
                     if (leaderId != null) {
                         User leader = userMapper.selectById(leaderId);
@@ -137,7 +138,12 @@ public class OrderService {
     public String applyAfterSales(Long orderId, String reason) {
         Order order = orderMapper.selectById(orderId);
         if (order == null) return "订单不存在";
-        if (order.getStatus() != 2) return "该订单状态无法申请售后";
+
+        // 🌟 修复 Bug：允许 已收货(2) 和 已评价完成(3) 的状态申请售后
+        if (order.getStatus() != 2 && order.getStatus() != 3) {
+            return "该订单状态无法申请售后";
+        }
+
         if (order.getReceiveTime() == null) return "订单未记录收货时间，无法判定是否超时";
 
         // 核心计算：判断当前时间与收货时间的差值是否大于 24 小时
@@ -155,19 +161,35 @@ public class OrderService {
     }
 
     /**
-     * 2. Web 管理员审核售后
+     * Web 管理员审核售后 (🌟新增日志记录)
      */
-    public String approveAfterSales(Long orderId, boolean isAgree) {
+    public String approveAfterSales(Long orderId, boolean isAgree, Long adminId) {
         Order order = orderMapper.selectById(orderId);
         if (order == null || order.getStatus() != 5) return "订单状态异常，无法审核";
+
+        // 🌟 准备一份通用的审计日志模板
+        AuditLog log = new AuditLog();
+        log.setAdminId(adminId); // 是谁操作的
+        log.setTargetId(orderId); // 目标对象为订单ID
+        log.setCreateTime(new Date()); // 操作时间
 
         if (isAgree) {
             order.setStatus(6); // 6: 同意退货，等待用户退给团长
             orderMapper.updateById(order);
+
+            // 🌟 记录同意售后的日志
+            log.setActionType("AFTER_SALES_PASS");
+            auditLogMapper.insert(log);
+
             return "已同意售后，等待用户退货给团长";
         } else {
             order.setStatus(8); // 8: 拒绝售后
             orderMapper.updateById(order);
+
+            // 🌟 记录拒绝售后的日志
+            log.setActionType("AFTER_SALES_REJECT");
+            auditLogMapper.insert(log);
+
             return "已拒绝该售后申请";
         }
     }

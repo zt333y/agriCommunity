@@ -39,9 +39,11 @@ public class OrderController {
         return Result.success(orderService.getOrderList(userId));
     }
 
-    @PostMapping("/receive")
-    public Result<String> receiveOrder(Long orderId) {
-        return Result.success(orderService.receiveOrder(orderId));
+    @PostMapping("/receive") // 根据你原本的路径可能叫 /confirm 或其他，保持一致即可
+    public Result<String> receiveOrder(@RequestParam("orderId") Long orderId) {
+        String msg = orderService.receiveOrder(orderId);
+        if ("收货成功".equals(msg)) return Result.success("收货成功");
+        return Result.error(msg);
     }
 
     @GetMapping("/leaderList")
@@ -80,8 +82,12 @@ public class OrderController {
 
     @PostMapping("/verify")
     public Result<String> verifyOrder(Long orderId) {
-        orderMapper.updateStatus(orderId, 2);
-        return Result.success("核销成功，订单已完成流转");
+        // 复用 orderService 里写好的“更改状态2并记录当前时间”的逻辑
+        String msg = orderService.receiveOrder(orderId);
+        if ("收货成功".equals(msg)) {
+            return Result.success("核销成功，订单已完成流转");
+        }
+        return Result.error(msg);
     }
 
     @GetMapping("/pickingList")
@@ -117,15 +123,19 @@ public class OrderController {
     }
 
     @PostMapping("/applyAfterSales")
-    public Result<String> applyAfterSales(Long orderId, String reason) {
+    public Result<String> applyAfterSales(@RequestParam("orderId") Long orderId, @RequestParam("reason") String reason) {
         String msg = orderService.applyAfterSales(orderId, reason);
-        if (msg.contains("已提交")) return Result.success(msg);
+        if (msg.contains("已提交")) {
+            return Result.success(msg);
+        }
         return Result.error(msg);
     }
 
     @PostMapping("/approveAfterSales")
-    public Result<String> approveAfterSales(Long orderId, boolean isAgree) {
-        String msg = orderService.approveAfterSales(orderId, isAgree);
+    public Result<String> approveAfterSales(Long orderId, boolean isAgree, jakarta.servlet.http.HttpServletRequest request) {
+        Long adminId = Long.valueOf(request.getAttribute("currentUserId").toString());
+        // 🌟 把 adminId 传给 Service
+        String msg = orderService.approveAfterSales(orderId, isAgree, adminId);
         return Result.success(msg);
     }
 

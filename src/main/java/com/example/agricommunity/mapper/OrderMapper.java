@@ -22,6 +22,14 @@ public interface OrderMapper {
     // 查询订单列表（XML 实现）
     List<OrderVO> selectOrderList(Long userId);
     List<OrderVO> selectAllOrders();
+    // 🌟 新增：统计今日总销售额
+    Double sumTodaySales();
+
+    // 🌟 新增：统计今日总订单量
+    Integer countTodayOrders();
+
+    // 🌟 新增：统计今日各商品分类的销量占比
+    List<Map<String, Object>> selectTodayCategoryStats();
 
     // 更新主订单状态 (兼容所有的旧版 Controller 代码)
     @Update("UPDATE t_order SET status = #{status} WHERE id = #{orderId}")

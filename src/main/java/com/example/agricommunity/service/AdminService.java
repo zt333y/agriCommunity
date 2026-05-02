@@ -31,13 +31,19 @@ public class AdminService {
     public Map<String, Object> getRealStats() {
         Map<String, Object> stats = new HashMap<>();
 
-        stats.put("totalSales", orderMapper.sumTotalSales());
-        stats.put("totalOrders", orderMapper.countTotalOrders());
+        // 🌟 1. 核心修改：获取“今日”的销售额和订单量
+        Double todaySales = orderMapper.sumTodaySales();
+        stats.put("totalSales", todaySales != null ? todaySales : 0.0); // 防止今日0单返回 null
+        stats.put("totalOrders", orderMapper.countTodayOrders());
+
+        // （在售商品数和总用户数依然保留大盘数据）
         stats.put("totalProducts", productMapper.countTotalProducts());
         stats.put("totalUsers", userMapper.countTotalUsers());
 
-        stats.put("categoryData", productMapper.selectCategoryStats());
+        // 🌟 2. 核心修改：改为统计“今日订单”中的农产品分类销量占比
+        stats.put("categoryData", orderMapper.selectTodayCategoryStats());
 
+        // 近七天趋势保持不变
         List<Map<String, Object>> trendData = orderMapper.selectLastSevenDaysSales();
         List<String> dates = new ArrayList<>();
         List<Object> sales = new ArrayList<>();
@@ -75,9 +81,8 @@ public class AdminService {
         log.setAdminId(adminId);
         log.setTargetId(productId);
         log.setActionType(status == 1 ? "AUDIT_PASS" : "AUDIT_REJECT");
-        log.setCreateTime(new Date()); // 🌟 补全时间字段
+        log.setCreateTime(new Date());
 
-        // 🌟 核心修复：调用更新后的 insert 方法！
         auditLogMapper.insert(log);
 
         return status == 1 ? "审核通过，商品已成功上架" : "已驳回该商品";
