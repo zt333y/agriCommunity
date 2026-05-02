@@ -30,6 +30,24 @@ public interface OrderMapper {
     @Update("UPDATE t_order SET status = #{status} WHERE id = #{orderId}")
     int updateStatus(@Param("orderId") Long orderId, @Param("status") Integer status);
 
+    // ================= 🌟 新增：售后与单体查询操作 🌟 =================
+
+    // 供 OrderService 使用的单条订单查询
+    @Select("SELECT * FROM t_order WHERE id = #{id}")
+    Order selectById(@Param("id") Long id);
+
+    // 动态更新订单实体 (包含收货时间、退款原因、状态等)
+    @Update("<script>" +
+            "UPDATE t_order " +
+            "<set>" +
+            "  <if test='status != null'>status = #{status},</if>" +
+            "  <if test='receiveTime != null'>receive_time = #{receiveTime},</if>" +
+            "  <if test='refundReason != null'>refund_reason = #{refundReason},</if>" +
+            "</set>" +
+            "WHERE id = #{id}" +
+            "</script>")
+    int updateById(Order order);
+
     // ================= 统计相关 (Web 大屏数据看板使用) =================
     @Select("SELECT IFNULL(SUM(total_amount), 0) FROM t_order WHERE status >= 1")
     BigDecimal sumTotalSales();
@@ -37,7 +55,6 @@ public interface OrderMapper {
     @Select("SELECT COUNT(*) FROM t_order")
     int countTotalOrders();
 
-    // 🌟 核心修复：把你大屏折线图需要的近7天统计方法补回来了！
     @Select("SELECT DATE_FORMAT(create_time, '%m-%d') as date, SUM(total_amount) as sales " +
             "FROM t_order WHERE create_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) " +
             "GROUP BY date ORDER BY date")

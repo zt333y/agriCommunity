@@ -15,8 +15,15 @@ public class OrderVO {
     private String productNames;
     private String address;
     private Long productId;
-    private String buyerName; // 🌟 接收查询出来的买家姓名
-
-    // 🌟 核心新增：商品明细列表
+    private String buyerName;
     private List<OrderItem> items;
+
+    // 🌟 补全这个关键的 ID 字段，让 OrderService 里的 getLeaderId() 不再报错
+    private Long leaderId;
+
+    private String leaderName;
+    private String leaderPhone;
+    private String pickupAddress;
+    private Date receiveTime;
+    private String refundReason;
 }

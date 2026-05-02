@@ -15,4 +15,6 @@ public class Order {
     private Integer status;      // 状态：0待付款，1待发货
     private Date createTime;
     private String address;
+    private Date receiveTime;
+    private String refundReason;
 }

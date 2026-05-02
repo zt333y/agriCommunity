@@ -96,18 +96,43 @@ public class OrderController {
         return Result.success("发货成功，已流转至社区团长端");
     }
 
+    // 🌟 致命 BUG 修复在这里！！
     @PostMapping("/shipByProduct")
     public Result<String> shipByProduct(Long productId, HttpServletRequest request) {
         Long farmerId = Long.valueOf(request.getAttribute("currentUserId").toString());
-        int rows = orderMapper.shipByProduct(farmerId, productId);
-        if (rows > 0) {
+
+        // 🌟 之前直接调用了 orderMapper，越过了检查程序！
+        // 🌟 现在强制调用 orderService 里带有“全部发货才扭转主订单”的高级逻辑！
+        String msg = orderService.shipByProduct(farmerId, productId);
+
+        if ("发货成功".equals(msg)) {
             return Result.success("一键发货成功，商品已流转至社区团长端！");
         }
-        return Result.error("暂无需要发货的订单");
+        return Result.error(msg);
     }
 
     @GetMapping("/items")
     public Result<List<OrderItem>> getOrderItems(@RequestParam Long orderId) {
         return Result.success(orderMapper.selectItemsByOrderId(orderId));
+    }
+
+    @PostMapping("/applyAfterSales")
+    public Result<String> applyAfterSales(Long orderId, String reason) {
+        String msg = orderService.applyAfterSales(orderId, reason);
+        if (msg.contains("已提交")) return Result.success(msg);
+        return Result.error(msg);
+    }
+
+    @PostMapping("/approveAfterSales")
+    public Result<String> approveAfterSales(Long orderId, boolean isAgree) {
+        String msg = orderService.approveAfterSales(orderId, isAgree);
+        return Result.success(msg);
+    }
+
+    @PostMapping("/leaderConfirmReturn")
+    public Result<String> leaderConfirmReturn(Long orderId) {
+        String msg = orderService.leaderConfirmReturn(orderId);
+        if (msg.contains("完成")) return Result.success(msg);
+        return Result.error(msg);
     }
 }
